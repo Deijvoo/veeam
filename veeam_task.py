@@ -5,6 +5,7 @@ import os
 import shutil
 import time
 
+
 def calculate_hash(file_path: str) -> str:
     """
     Calculate the MD5 hash of the file.
@@ -21,9 +22,11 @@ def calculate_hash(file_path: str) -> str:
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
+
 def are_files_metadata_identical(file1: str, file2: str) -> bool:
     """
-    Compare two files based on their metadata (size and last modified time) to determine if they are identical.
+    Compare two files based on their metadata (size and last modified time)
+    to determine if they are identical.
 
     Args:
         file1 (str): Path to the first file.
@@ -32,12 +35,15 @@ def are_files_metadata_identical(file1: str, file2: str) -> bool:
     Returns:
         bool: True if files' metadata are identical, False otherwise.
     """
-    return (os.path.getsize(file1) == os.path.getsize(file2) and 
+    return (os.path.getsize(file1) == os.path.getsize(file2) and
             os.path.getmtime(file1) == os.path.getmtime(file2))
 
-def are_files_identical(file1: str, file2: str, use_checksum: bool = False) -> bool:
+
+def are_files_identical(
+        file1: str, file2: str, use_checksum: bool = False) -> bool:
     """
-    Compare two files to determine if they are identical using metadata and optionally checksum.
+    Compare two files to determine if they are identical
+    using metadata and optionally checksum.
 
     Args:
         file1 (str): Path to the first file.
@@ -53,6 +59,7 @@ def are_files_identical(file1: str, file2: str, use_checksum: bool = False) -> b
         return False
     return True
 
+
 def create_directory(replica_dir: str) -> None:
     """
     Create a directory at the specified path.
@@ -62,6 +69,7 @@ def create_directory(replica_dir: str) -> None:
     """
     os.makedirs(replica_dir)
     logging.info('Created directory: %s', replica_dir)
+
 
 def create_file(source_file: str, replica_file: str) -> None:
     """
@@ -75,6 +83,7 @@ def create_file(source_file: str, replica_file: str) -> None:
     shutil.copy2(source_file, replica_file)
     logging.info('Created file: %s', replica_file)
 
+
 def copy_file(source_file: str, replica_file: str) -> None:
     """
     Copy the source file to the replica file path.
@@ -86,6 +95,7 @@ def copy_file(source_file: str, replica_file: str) -> None:
     shutil.copy2(source_file, replica_file)
     logging.info('Copied file: %s', replica_file)
 
+
 def delete_file(replica_file: str) -> None:
     """
     Delete the specified file.
@@ -95,6 +105,7 @@ def delete_file(replica_file: str) -> None:
     """
     os.remove(replica_file)
     logging.info('Deleted file: %s', replica_file)
+
 
 def delete_directory(replica_dir: str) -> None:
     """
@@ -106,12 +117,18 @@ def delete_directory(replica_dir: str) -> None:
     shutil.rmtree(replica_dir)
     logging.info('Deleted directory: %s', replica_dir)
 
-def traverse_source_files(source_files: set[str], source: str, replica: str, use_checksum: bool) -> None:
+
+def traverse_source_files(source_files: set[str],
+                          source: str,
+                          replica: str,
+                          use_checksum: bool) -> None:
     """
-    Traverse the source directory and handle file/directory creation and copying.
+    Traverse the source directory and handle
+    file/directory creation and copying.
 
     Args:
-        source_files (Set[str]): Set to store paths of files in the source directory.
+        source_files (Set[str]): Set to store paths of files
+        in the source directory.
         source (str): Path to the source directory.
         replica (str): Path to the replica directory.
         use_checksum (bool): Flag to use checksum for file comparison.
@@ -120,7 +137,8 @@ def traverse_source_files(source_files: set[str], source: str, replica: str, use
         entries = dirs + files
         for entry in entries:
             source_file_path = os.path.join(root, entry)
-            replica_file_path = os.path.join(replica, os.path.relpath(source_file_path, source))
+            replica_file_path = os.path.join(
+                replica, os.path.relpath(source_file_path, source))
             source_files.add(source_file_path)
 
             if not os.path.exists(replica_file_path):
@@ -128,16 +146,24 @@ def traverse_source_files(source_files: set[str], source: str, replica: str, use
                     create_file(source_file_path, replica_file_path)
                 else:
                     create_directory(replica_file_path)
-            elif os.path.isfile(replica_file_path) and not are_files_identical(source_file_path, replica_file_path, use_checksum):
+            elif os.path.isfile(replica_file_path) \
+                and not are_files_identical(
+                    source_file_path, replica_file_path, use_checksum):
                 copy_file(source_file_path, replica_file_path)
 
-def traverse_replica_files(replica_files: set[str], source_files: set[str], source: str, replica: str) -> None:
+
+def traverse_replica_files(replica_files: set[str],
+                           source_files: set[str],
+                           source: str,
+                           replica: str) -> None:
     """
     Traverse the replica directory and handle file/directory deletion.
 
     Args:
-        replica_files (Set[str]): Set to store paths of files in the replica directory.
-        source_files (Set[str]): Set to store paths of files in the source directory.
+        replica_files (Set[str]): Set to store paths
+        of files in the replica directory.
+        source_files (Set[str]): Set to store paths
+        of files in the source directory.
         source (str): Path to the source directory.
         replica (str): Path to the replica directory.
     """
@@ -146,15 +172,20 @@ def traverse_replica_files(replica_files: set[str], source_files: set[str], sour
         for entry in entries:
             replica_file_path = os.path.join(root, entry)
             replica_files.add(replica_file_path)
-            if os.path.relpath(replica_file_path, replica) not in [os.path.relpath(f, source) for f in source_files]:
+            if os.path.relpath(replica_file_path, replica) \
+                    not in [os.path.relpath(f, source) for f in source_files]:
                 if os.path.isfile(replica_file_path):
                     delete_file(replica_file_path)
                 else:
                     delete_directory(replica_file_path)
 
-def sync_folders(source: str, replica: str, use_checksum: bool = False) -> None:
+
+def sync_folders(source: str,
+                 replica: str,
+                 use_checksum: bool = False) -> None:
     """
-    Synchronize the contents of the source directory with the replica directory.
+    Synchronize the contents of the source
+    directory with the replica directory.
 
     Args:
         source (str): Path to the source directory.
@@ -174,16 +205,25 @@ def sync_folders(source: str, replica: str, use_checksum: bool = False) -> None:
     traverse_source_files(source_files, source, replica, use_checksum)
     traverse_replica_files(replica_files, source_files, source, replica)
 
+
 def main() -> None:
     """
-    Main function to parse command-line arguments and start the synchronization process.
+    Main function to parse command-line
+    arguments and start the synchronization process.
     """
     parser = argparse.ArgumentParser(description='Sync folders')
-    parser.add_argument('--source', type=str, required=True, help='Source folder')
-    parser.add_argument('--replica', type=str, required=True, help='Replica folder')
-    parser.add_argument('--log', type=str, required=True, help='Log file')
-    parser.add_argument('--interval', type=int, default=15, help='Interval in seconds')
-    parser.add_argument('--checksum', action='store_true', help='Use checksum for file comparison')
+    parser.add_argument(
+        '--source', type=str, required=True, help='Source folder')
+    parser.add_argument(
+        '--replica', type=str, required=True, help='Replica folder')
+    parser.add_argument(
+        '--log', type=str, required=True, help='Log file')
+    parser.add_argument(
+        '--interval', type=int, default=15, help='Interval in seconds')
+    parser.add_argument(
+        '--checksum',
+        action='store_true',
+        help='Use checksum for file comparison')
 
     args = parser.parse_args()
 
@@ -192,7 +232,8 @@ def main() -> None:
                         filemode='w')
     console = logging.StreamHandler()
     console.setLevel(logging.DEBUG)
-    console.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    console.setFormatter(
+        logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logging.getLogger().addHandler(console)
 
     while True:
@@ -200,6 +241,7 @@ def main() -> None:
         sync_folders(args.source, args.replica, args.checksum)
         logging.info('End syncing folders')
         time.sleep(args.interval)
+
 
 if __name__ == '__main__':
     main()

@@ -2,11 +2,9 @@ import unittest
 import os
 import shutil
 import logging
-import sys
+from ..veeam_task import create_file, copy_file, delete_file, \
+    create_directory, delete_directory, sync_folders
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from veeam_task import create_file, copy_file, delete_file, create_directory, delete_directory, sync_folders
 
 class TestSyncFolders(unittest.TestCase):
 
@@ -84,8 +82,10 @@ class TestSyncFolders(unittest.TestCase):
         self.assertFalse(os.path.exists(new_dir))
 
     def test_sync_folders_create(self):
-        source_file = os.path.join(self.source_dir, 'test_sync_folders_file.txt')
-        replica_file = os.path.join(self.replica_dir, 'test_sync_folders_file.txt')
+        source_file = os.path.join(
+            self.source_dir, 'test_sync_folders_file.txt')
+        replica_file = os.path.join(
+            self.replica_dir, 'test_sync_folders_file.txt')
         with open(source_file, 'w') as f:
             f.write('Test content')
         sync_folders(self.source_dir, self.replica_dir)
@@ -106,7 +106,8 @@ class TestSyncFolders(unittest.TestCase):
         empty_dir = os.path.join(self.replica_dir, 'empty_dir')
         os.makedirs(empty_dir, exist_ok=True)
         self.assertTrue(os.path.exists(empty_dir))
-        self.assertFalse(os.path.exists(os.path.join(self.source_dir, 'empty_dir')))
+        self.assertFalse(os.path.exists(os.path.join(
+            self.source_dir, 'empty_dir')))
         sync_folders(self.source_dir, self.replica_dir)
         self.assertFalse(os.path.exists(empty_dir))
 
@@ -124,7 +125,8 @@ class TestSyncFolders(unittest.TestCase):
         empty_dir = os.path.join(self.source_dir, 'empty_dir')
         os.makedirs(empty_dir, exist_ok=True)
         sync_folders(self.source_dir, self.replica_dir)
-        self.assertTrue(os.path.exists(os.path.join(self.replica_dir, 'empty_dir')))
+        self.assertTrue(os.path.exists(os.path.join(
+            self.replica_dir, 'empty_dir')))
 
     def test_sync_folders_update(self):
         source_file = os.path.join(self.source_dir, 'test_update_file.txt')
@@ -165,6 +167,7 @@ class TestSyncFolders(unittest.TestCase):
             sync_folders(self.source_dir, self.replica_dir)
         self.assertIn("Source directory does not exist", log.output[0])
         self.assertIn("Replica directory does not exist", log.output[1])
+
 
 if __name__ == '__main__':
     unittest.main()
