@@ -77,7 +77,7 @@ def delete_directory(replica_dir: str) -> None:
     logging.info('Deleted directory: %s', replica_dir)
 
 
-def traverse_source_files(source_files: Set[str], source: str, replica: str) -> None:
+def traverse_source_files(source_files: set[str], source: str, replica: str) -> None:
     """
     Traverse the source directory and handle file/directory creation and copying.
 
