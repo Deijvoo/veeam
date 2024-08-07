@@ -5,18 +5,19 @@ import shutil
 import time
 
 
-def files_are_identical(file1: str, file2: str) -> bool:
+def files_metadata_are_identical(file1: str, file2: str) -> bool:
     """
-    Compare two files to determine if they are identical.
+    Compare two files based on their metadata (size and last modified time) to determine if they are identical.
 
     Args:
         file1 (str): Path to the first file.
         file2 (str): Path to the second file.
 
     Returns:
-        bool: True if files are identical, False otherwise.
+        bool: True if files' metadata are identical, False otherwise.
     """
-    return os.path.getsize(file1) == os.path.getsize(file2) and open(file1, 'rb').read() == open(file2, 'rb').read()
+    return (os.path.getsize(file1) == os.path.getsize(file2) and 
+            os.path.getmtime(file1) == os.path.getmtime(file2))
 
 
 def create_directory(replica_dir: str) -> None:
@@ -98,7 +99,7 @@ def traverse_source_files(source_files: set[str], source: str, replica: str) -> 
                     create_file(source_file_path, replica_file_path)
                 else:
                     create_directory(replica_file_path)
-            elif os.path.isfile(replica_file_path) and not files_are_identical(source_file_path, replica_file_path):
+            elif os.path.isfile(replica_file_path) and not files_metadata_are_identical(source_file_path, replica_file_path):
                 copy_file(source_file_path, replica_file_path)
 
 
