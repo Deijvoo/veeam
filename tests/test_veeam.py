@@ -8,8 +8,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from veeam_task import create_file, copy_file, delete_file, create_directory, delete_directory, sync_folders
 
-
-
 class TestSyncFolders(unittest.TestCase):
 
     @classmethod
@@ -141,8 +139,20 @@ class TestSyncFolders(unittest.TestCase):
         with open(replica_file, 'r') as f:
             self.assertEqual(f.read(), 'Updated content')
 
-    def test_sync_folders_missing_directories(self):
+    def test_sync_folders_update_with_checksum(self):
+        source_file = os.path.join(self.source_dir, 'test_update_file.txt')
+        replica_file = os.path.join(self.replica_dir, 'test_update_file.txt')
+        with open(source_file, 'w') as f:
+            f.write('Test content')
+        sync_folders(self.source_dir, self.replica_dir, use_checksum=True)
+        self.assertTrue(os.path.exists(replica_file))
+        with open(source_file, 'w') as f:
+            f.write('Updated content')
+        sync_folders(self.source_dir, self.replica_dir, use_checksum=True)
+        with open(replica_file, 'r') as f:
+            self.assertEqual(f.read(), 'Updated content')
 
+    def test_sync_folders_missing_directories(self):
         if os.path.exists(self.source_dir):
             shutil.rmtree(self.source_dir)
         if os.path.exists(self.replica_dir):
@@ -155,7 +165,6 @@ class TestSyncFolders(unittest.TestCase):
             sync_folders(self.source_dir, self.replica_dir)
         self.assertIn("Source directory does not exist", log.output[0])
         self.assertIn("Replica directory does not exist", log.output[1])
-
 
 if __name__ == '__main__':
     unittest.main()
