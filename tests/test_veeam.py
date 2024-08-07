@@ -2,7 +2,7 @@ import unittest
 import os
 import shutil
 import logging
-from ..veeam_task import create_file, copy_file, delete_file, \
+from veeam_task import create_file, copy_file, delete_file, \
     create_directory, delete_directory, sync_folders
 
 

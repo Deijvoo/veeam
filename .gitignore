@@ -1,2 +1,6 @@
 .idea/*
 __pycache__/*
+.vscode/settings.json
+tests/__pycache__/*
+tests/__pycache__/test_veeam.cpython-311.pyc
+tests/__pycache__/test_veeam.cpython-311.pyc
